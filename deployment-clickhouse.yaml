@@ -1,0 +1,91 @@
+---
+# ClickHouse Init Scripts ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-init-scripts
+  namespace: monitoring
+data:
+  init-db.sql: |
+    -- Create the otel database if it doesn't exist
+    CREATE DATABASE IF NOT EXISTS otel;
+---
+# ClickHouse Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickhouse
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+    spec:
+      containers:
+        - name: clickhouse
+          image: clickhouse/clickhouse-server:latest
+          ports:
+            - containerPort: 8123
+            - containerPort: 9000
+          env:
+            - name: CLICKHOUSE_DB
+              value: fluentbit
+            - name: CLICKHOUSE_USER
+              value: admin
+            - name: CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT
+              value: "1"
+            - name: CLICKHOUSE_PASSWORD
+              value: password123
+          volumeMounts:
+            - name: clickhouse-init-config
+              mountPath: /docker-entrypoint-initdb.d
+      #   - name: clickhouse-data
+      #     mountPath: /var/lib/clickhouse
+      #   - name: clickhouse-logs
+      #     mountPath: /var/log/clickhouse-server
+      volumes:
+        - name: clickhouse-init-config
+          configMap:
+            name: clickhouse-init-scripts
+      # - name: clickhouse-data
+      #   persistentVolumeClaim:
+      #     claimName: clickhouse-data
+      # - name: clickhouse-logs
+      #   persistentVolumeClaim:
+      #     claimName: clickhouse-logs
+
+---
+# ClickHouse Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: monitoring
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8123
+      targetPort: 8123
+    - name: tcp
+      port: 9000
+      targetPort: 9000
+  selector:
+    app: clickhouse
+
+---
+# Secret for ClickHouse credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: clickhouse-credentials
+  namespace: monitoring
+type: Opaque
+stringData:
+  username: admin
+  password: password123

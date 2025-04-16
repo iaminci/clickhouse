@@ -1,0 +1,98 @@
+apiVersion: "clickhouse.altinity.com/v1"
+kind: "ClickHouseInstallation"
+
+metadata:
+  name: "monitoring-demo"
+
+spec:
+  defaults:
+    templates:
+      volumeClaimTemplate: data-volume
+
+  configuration:
+    zookeeper:
+      nodes:
+        - host: zookeeper.zoons
+          port: 2181
+    users:
+      # printf 'test_password' | sha256sum
+      test_user/password_sha256_hex: 10a6e6cc8311a3e2bcc09bf6c199adecd5dd59408c343e926b129c4914f3cb01
+      test_user/password: test_password
+      # to allow access outside from kubernetes
+      test_user/networks/ip:
+        - 0.0.0.0/0
+    clusters:
+      - name: replcluster
+        templates:
+          podTemplate: ch-with-backup-sidecar
+        layout:
+          shardsCount: 1
+          replicasCount: 1
+
+  templates:
+    podTemplates:
+      - name: ch-with-backup-sidecar
+        spec:
+          initContainers:
+            - name: init-flags-dir
+              image: busybox
+              command:
+                [
+                  "sh",
+                  "-c",
+                  "mkdir -p /var/lib/clickhouse/flags && touch /var/lib/clickhouse/flags/force_drop_table && chmod 664 /var/lib/clickhouse/flags/force_drop_table",
+                ]
+              volumeMounts:
+                - name: clickhouse-storage-template
+                  mountPath: /var/lib/clickhouse
+          containers:
+            - name: clickhouse-pod
+              image: clickhouse/clickhouse-server:23.8
+              volumeMounts:
+                - name: clickhouse-storage-template
+                  mountPath: /var/lib/clickhouse
+                - name: backup-volume
+                  mountPath: /var/lib/clickhouse/backup
+            - name: clickhouse-backup
+              image: altinity/clickhouse-backup:latest
+              args: ["server"]
+              securityContext:
+                runAsUser: 101 # ClickHouse user ID
+                runAsGroup: 101 # ClickHouse group ID
+              ports:
+                - containerPort: 7171
+                  name: http
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/clickhouse-backup
+                - name: clickhouse-storage-template
+                  mountPath: /var/lib/clickhouse
+              env:
+                - name: CLICKHOUSE_HOST
+                  value: "localhost"
+                - name: CLICKHOUSE_PORT
+                  value: "9000"
+                - name: CLICKHOUSE_USERNAME
+                  value: "test_user"
+                - name: CLICKHOUSE_PASSWORD
+                  value: "test_password"
+          volumes:
+            - name: config
+              configMap:
+                name: clickhouse-backup-config
+            - name: backup-volume
+              persistentVolumeClaim:
+                claimName: clickhouse-backup-pvc
+
+    volumeClaimTemplates:
+      - name: clickhouse-storage-template
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 50Gi
+          storageClassName: local-path
+          selector:
+            matchLabels:
+              type: clickhouse-data

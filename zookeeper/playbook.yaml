@@ -1,0 +1,61 @@
+- name: Install and configure Zookeeper
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    namespace_name: zoons
+
+  tasks:
+    - name: Check if namespace exists
+      kubernetes.core.k8s_info:
+        kind: Namespace
+        name: "{{ namespace_name }}"
+      register: namespace_check
+      changed_when: false
+
+    - name: Create namespace
+      kubernetes.core.k8s:
+        kind: Namespace
+        name: "{{ namespace_name }}"
+        state: present
+      when: namespace_check.resources | length == 0
+
+    - name: Create Persistant Volume
+      kubernetes.core.k8s:
+        state: present
+        src: 00-zookeeper-pv.yaml
+        namespace: "{{ namespace_name }}"
+      register: persistent_volume
+      ignore_errors: false
+
+    - name: Create Service Client Access
+      kubernetes.core.k8s:
+        state: present
+        src: 01-service-client-access.yaml
+        namespace: "{{ namespace_name }}"
+      register: service_client_access
+      ignore_errors: false
+
+    - name: Create Headless Service
+      kubernetes.core.k8s:
+        state: present
+        src: 02-headless-service.yaml
+        namespace: "{{ namespace_name }}"
+      register: headless_service
+      ignore_errors: false
+
+    - name: Create Pod Disruption Budget
+      kubernetes.core.k8s:
+        state: present
+        src: 03-pod-disruption-budget.yaml
+        namespace: "{{ namespace_name }}"
+      register: pod_disruption_budget
+      ignore_errors: false
+
+    - name: Create StatefulSet Zookeeper
+      kubernetes.core.k8s:
+        state: present
+        src: 05-stateful-set-persistent-volume.yaml
+        namespace: "{{ namespace_name }}"
+      register: statefulset_zookeeper
+      ignore_errors: false

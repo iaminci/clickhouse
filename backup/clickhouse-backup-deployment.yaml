@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickhouse-backup
+  labels:
+    app: clickhouse-backup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse-backup
+  template:
+    metadata:
+      labels:
+        app: clickhouse-backup
+    spec:
+      serviceAccountName: clickhouse-backup
+      initContainers:
+        - name: init-flags-dir
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "mkdir -p /var/lib/clickhouse/flags && touch /var/lib/clickhouse/flags/force_drop_table && chmod 664 /var/lib/clickhouse/flags/force_drop_table",
+            ]
+          volumeMounts:
+            - name: clickhouse-storage
+              mountPath: /var/lib/clickhouse
+      containers:
+        - name: clickhouse-backup
+          image: altinity/clickhouse-backup:latest
+          args: ["server"]
+          securityContext:
+            runAsUser: 101 # ClickHouse user ID
+            runAsGroup: 101 # ClickHouse group ID
+          ports:
+            - containerPort: 7171
+              name: http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/clickhouse-backup
+            - name: clickhouse-storage
+              mountPath: /var/lib/clickhouse
+          env:
+            - name: CLICKHOUSE_HOST
+              value: "clickhouse-monitoring-demo"
+            - name: CLICKHOUSE_PORT
+              value: "9000"
+            - name: CLICKHOUSE_USERNAME
+              value: "test_user"
+            - name: CLICKHOUSE_PASSWORD
+              value: "test_password"
+      volumes:
+        - name: config
+          configMap:
+            name: clickhouse-backup-config
+        - name: clickhouse-storage
+          persistentVolumeClaim:
+            claimName: clickhouse-backup-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse-backup
+  labels:
+    app: clickhouse-backup
+spec:
+  ports:
+    - port: 7171
+      targetPort: http
+      name: http
+  selector:
+    app: clickhouse-backup
