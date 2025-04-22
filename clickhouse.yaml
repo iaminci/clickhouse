@@ -48,6 +48,9 @@ spec:
           containers:
             - name: clickhouse-pod
               image: clickhouse/clickhouse-server:23.8
+              env:
+                - name: TZ
+                  value: "Asia/Kolkata"
               volumeMounts:
                 - name: clickhouse-storage-template
                   mountPath: /var/lib/clickhouse
@@ -55,7 +58,7 @@ spec:
                   mountPath: /var/lib/clickhouse/backup
             - name: clickhouse-backup
               image: altinity/clickhouse-backup:latest
-              args: ["server"]
+              args: ["server", "--config", "/etc/clickhouse-backup/config.yml"]
               securityContext:
                 runAsUser: 101 # ClickHouse user ID
                 runAsGroup: 101 # ClickHouse group ID
@@ -76,6 +79,8 @@ spec:
                   value: "test_user"
                 - name: CLICKHOUSE_PASSWORD
                   value: "test_password"
+                - name: TZ
+                  value: "Asia/Kolkata"
           volumes:
             - name: config
               configMap:

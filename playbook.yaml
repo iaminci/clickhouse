@@ -48,15 +48,15 @@
       register: helm_install
       ignore_errors: true
 
-    - name: Wait for ClickHouse Operator to be ready
-      kubernetes.core.k8s_info:
-        kind: Deployment
-        name: altinity-clickhouse-operator
-        namespace: "{{ namespace_name }}"
-      register: operator_ready
-      until: operator_ready.resources[0].status.readyReplicas == 1
-      retries: 5
-      delay: 10
+    # - name: Wait for ClickHouse Operator to be ready
+    #   kubernetes.core.k8s_info:
+    #     kind: Deployment
+    #     name: altinity-clickhouse-operator
+    #     namespace: "{{ namespace_name }}"
+    #   register: operator_ready
+    #   until: operator_ready.resources[0].status.readyReplicas == 1
+    #   retries: 5
+    #   delay: 10
 
     - name: Create Persistent Volume
       kubernetes.core.k8s:

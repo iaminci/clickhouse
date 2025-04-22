@@ -30,10 +30,10 @@
       register: clickhouse_installation
       ignore_errors: false
 
-    - name: Create ClickHouse Backup Deployment
-      kubernetes.core.k8s:
-        state: present
-        src: clickhouse-backup-deployment.yaml
-        namespace: "{{ namespace_name }}"
-      register: clickhouse_installation
-      ignore_errors: false
+    # - name: Create ClickHouse Backup Deployment
+    #   kubernetes.core.k8s:
+    #     state: present
+    #     src: clickhouse-backup-deployment.yaml
+    #     namespace: "{{ namespace_name }}"
+    #   register: clickhouse_installation
+    #   ignore_errors: false

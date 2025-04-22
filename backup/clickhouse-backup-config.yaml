@@ -7,28 +7,28 @@ data:
     general:
       remote_storage: s3
       max_file_size: 1073741824
-      backups_to_keep_local: 3
-      backups_to_keep_remote: 5
+      backups_to_keep_local: 2
+      # backups_to_keep_remote: 5000 # Keep one week of hourly backups
       log_level: info
-      allow_empty_backups: false
-      download_concurrency: 1
-      upload_concurrency: 1
+      allow_empty_backups: true
+      download_concurrency: 4 # Increased for better performance
+      upload_concurrency: 4 # Increased for better performance
       download_max_bytes_per_second: 0
       upload_max_bytes_per_second: 0
       object_disk_server_side_copy_concurrency: 32
-      allow_object_disk_streaming: false
+      allow_object_disk_streaming: true # Enable for better performance with object storage
       restore_schema_on_cluster: "replcluster"
       upload_by_part: true
       download_by_part: true
       use_resumable_state: true
       restore_database_mapping: {}
       restore_table_mapping: {}
-      retries_on_failure: 3
-      retries_pause: 5s
-      watch_interval: 1h
-      full_interval: 24h
-      watch_backup_name_template: "shard{shard}-{type}-{time:20060102150405}"
-      sharded_operation_mode: none
+      retries_on_failure: 5 # Increased for better reliability
+      retries_pause: 10s # Increased retry pause
+      watch_interval: 1m # Incremental backup every hour
+      full_interval: 2m # Full backup every day, then incrementals in between
+      watch_backup_name_template: "shard{shard}-{type}-{time:20060102150405}" # {type} will be 'full' or 'incremental'
+      sharded_operation_mode: "none"
       cpu_nice_priority: 15
       io_nice_priority: "idle"
       rbac_backup_always: true
@@ -48,8 +48,8 @@ data:
       skip_disks: []
       skip_disk_types: []
       timeout: 5m
-      freeze_by_part: false
-      freeze_by_part_where: ""
+      freeze_by_part: true # Enable to freeze by part for more efficient backups
+      freeze_by_part_where: "" # Can add conditions if needed
       secure: false
       skip_verify: false
       sync_replicated_tables: true
@@ -69,24 +69,28 @@ data:
       backup_mutations: true
       restore_as_attach: false
       check_parts_columns: true
-      max_connections: 0
+      max_connections: 4 # Increased for parallel operations
 
     s3:
-      access_key: "VSMrbS2nfSCzqHalqwPa"
-      secret_key: "Ty9vVw3uTLzi6I0ExBc3Detd5S4XCW4rknWKvRSc"
+      access_key: "PY6t1xQQGcfoZ594tcHo"
+      secret_key: "Qf65a8c8Tf4dCrE7quGADgYG1hnr8SwetZRTHDBU"
       bucket: "clickhouse-backup"
       endpoint: "http://minio.minio.svc.cluster.local:9000"
       region: "ap-south-1"
-      path: "monitoring-demo"
+      path: "monitoring-demo/incremental-backup" 
+      object_disk_path: "monitoring-demo/object-disk-backup" # Added dedicated path for object disks
       compression_format: tar
       compression_level: 1
       path_style: true
-      force_path_style: true  # Adding this as well
-      disable_ssl: true      # Making sure SSL is completely disabled
-      use_presigned_url: false # Disable presigned URLs if they're causing issues
+      force_path_style: true
+      disable_ssl: true
+      use_presigned_url: false
+      concurrency: 4 # Increased for better performance
+      max_parts_count: 4000
+      allow_multipart_download: true # Enable for better performance
 
     api:
-      listen: "0.0.0.0:7171"
+      listen: "0.0.0.0:7172"
       enable_metrics: true
       enable_pprof: false
       username: ""
@@ -97,6 +101,6 @@ data:
       certificate_file: ""
       integration_tables_host: ""
       allow_parallel: true
-      create_integration_tables: false
+      create_integration_tables: true # Enable to track backups in ClickHouse
       complete_resumable_after_restart: true
-      watch_is_main_process: false
+      watch_is_main_process: true # Make watch the main process
