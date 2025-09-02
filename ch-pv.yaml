@@ -1,3 +1,4 @@
+## NFS Provisioner
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -7,28 +8,74 @@ metadata:
     type: clickhouse-data
 spec:
   capacity:
-    storage: 50Gi
+    storage: 50Gi # Specify the size you want to allocate
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany # NFS supports multiple readers/writers
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-path
-  hostPath:
-    path: /mnt/clickhouse/datadir-0
-    type: DirectoryOrCreate
+  storageClassName: nfs-storage # Must match your storage class name
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.0.5
+    path: /mnt/nfs-storage/k8s-storage/clickhouse/datadir-0
 ---
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: pv-clickhouse-storage-template-1
-#   labels:
-#     type: clickhouse-data
-# spec:
-#   capacity:
-#     storage: 50Gi
-#   accessModes:
-#     - ReadWriteOnce
-#   persistentVolumeReclaimPolicy: Retain
-#   storageClassName: local-path
-#   hostPath:
-#     path: /mnt/clickhouse/datadir-1
-#     type: DirectoryOrCreate
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-clickhouse-storage-template-1
+  labels:
+    type: clickhouse-data
+spec:
+  capacity:
+    storage: 50Gi # Specify the size you want to allocate
+  accessModes:
+    - ReadWriteMany # NFS supports multiple readers/writers
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-storage # Must match your storage class name
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.0.5
+    path: /mnt/nfs-storage/k8s-storage/clickhouse/datadir-1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-clickhouse-storage-template-2
+  labels:
+    type: clickhouse-data
+spec:
+  capacity:
+    storage: 50Gi # Specify the size you want to allocate
+  accessModes:
+    - ReadWriteMany # NFS supports multiple readers/writers
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-storage # Must match your storage class name
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.0.5
+    path: /mnt/nfs-storage/k8s-storage/clickhouse/datadir-2
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-clickhouse-storage-template-3
+  labels:
+    type: clickhouse-data
+spec:
+  capacity:
+    storage: 50Gi # Specify the size you want to allocate
+  accessModes:
+    - ReadWriteMany # NFS supports multiple readers/writers
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-storage # Must match your storage class name
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.0.5
+    path: /mnt/nfs-storage/k8s-storage/clickhouse/datadir-3

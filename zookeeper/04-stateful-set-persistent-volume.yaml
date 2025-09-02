@@ -1,11 +1,3 @@
-# Setup Zookeeper StatefulSet
-# Possible params:
-# 1. replicas
-# 2. memory
-# 3. cpu
-# 4. storage
-# 5. storageClassName
-# 6. user to run app
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -16,7 +8,7 @@ spec:
     matchLabels:
       app: zookeeper
   serviceName: zookeepers
-  replicas: 3
+  replicas: 2
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -56,10 +48,6 @@ spec:
               name: leader-election
             - containerPort: 7000
               name: prometheus
-          # See those links for proper startup settings:
-          # https://github.com/kow3ns/kubernetes-zookeeper/blob/master/docker/scripts/start-zookeeper
-          # https://clickhouse.yandex/docs/en/operations/tips/#zookeeper
-          # https://github.com/ClickHouse/ClickHouse/issues/11781
           command:
             - bash
             - -x
@@ -150,29 +138,16 @@ spec:
       securityContext:
         runAsUser: 1000
         fsGroup: 1000
-  ## Mount either emptyDir via volume or PV of 'storageclass-zookeeper' storageClass
-  ## Uncomment what is required
-  #      volumes:
-  #      - name: datadir-volume
-  #        emptyDir:
-  #          medium: "" #accepted values:  empty str (means node's default medium) or Memory
-  #          sizeLimit: 1Gi
-  ## Mount either emptyDir via volume or PV of 'storageclass-zookeeper' storageClass
-  ## Uncomment what is required
   volumeClaimTemplates:
     - metadata:
         name: datadir-volume
       spec:
         accessModes:
-          - ReadWriteOnce
+          - ReadWriteMany
         resources:
           requests:
             storage: 50Gi
-        storageClassName: local-path # storageclass-zookeeper
+        storageClassName: nfs-storage
         selector:
           matchLabels:
             type: zookeeper-data
-## storageClassName has to be coordinated with k8s admin and has to be created as a `kind: StorageClass` resource
-## In case no storageClassName specified at all - means use default storageClassName
-## In case storageClassName specified as empty value "" - means do dot use dynamic provisioning
-#      storageClassName: storageclass-zookeeper

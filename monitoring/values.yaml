@@ -1,7 +1,0 @@
-env:
-  - name: CLICKHOUSE_HOST
-    value: http://20.0.200.148:8123
-  - name: CLICKHOUSE_USER
-    value: admin
-  - name: CLICKHOUSE_PASSWORD
-    value: "ka216vv338p4"
