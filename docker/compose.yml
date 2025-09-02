@@ -1,0 +1,33 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-server
+    env_file:
+      - .env
+    ports:
+      - "8123:8123"
+      # - "9000:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server/
+      - ./backups.xml:/etc/clickhouse-server/config.d/backups.xml:ro
+      - ./clickhouse-backups:/var/lib/clickhouse/backups
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    restart: unless-stopped
+
+volumes:
+  clickhouse-data:
+    name: clickhouse-data
+    external: true
+  clickhouse-logs:
+    name: clickhouse-logs
+    external: true

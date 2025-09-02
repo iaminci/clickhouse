@@ -1,0 +1,36 @@
+<clickhouse>
+    <!-- Backup configuration -->
+    <backups>
+        <!-- Allow backups to local disk -->
+        <allowed_disk>backups</allowed_disk>
+        <allowed_disk>s3_backup_disk</allowed_disk>
+    </backups>
+    
+    <!-- Storage configuration for backups -->
+    <storage_configuration>
+        <disks>
+            <backups>
+                <type>local</type>
+                <path>/var/lib/clickhouse/backups/</path>
+            </backups>
+        </disks>
+        
+        <policies>
+            <backup_policy>
+                <volumes>
+                    <main>
+                        <disk>backups</disk>
+                    </main>
+                </volumes>
+            </backup_policy>
+        </policies>
+    </storage_configuration>
+    
+    <!-- Optional: Enable query log for point-in-time recovery -->
+    <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </query_log>
+</clickhouse>
