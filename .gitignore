@@ -1,3 +1,7 @@
 .DS_Store
 **/.DS_Store
 *.sql
+clickhouse-backups/
+backup_state.json
+clickhouse-backup.log
+.env
