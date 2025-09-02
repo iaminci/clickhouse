@@ -40,7 +40,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: cloudbeaver.theinci.in
+    - host: cb.opsly.dev
       http:
         paths:
           - path: /
