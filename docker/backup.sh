@@ -21,6 +21,7 @@ S3_BUCKET_NAME="$S3_BUCKET_NAME"
 STATE_FILE="./backup_state.json"
 SKIP_ON_NO_CHANGES="false"  # Set to false to disable change detection
 AWS_ENDPOINT_URL="http://192.168.0.215:9000"    # For MinIO required
+AWS_PROFILE="minio-local"   # For MinIO required
 
 # Function to log messages
 log() {
@@ -251,7 +252,7 @@ elif [ "${REMOTE_UPLOAD}" = "minio" ]; then
     log "Uploading backup to minio..."
     # Add your minio upload logic here
     export AWS_ENDPOINT_URL="$AWS_ENDPOINT_URL"
-    aws s3 sync "${BACKUP_DIR}/${BACKUP_NAME}" "s3://${S3_BUCKET_NAME}/${BACKUP_NAME}/"  --endpoint-url $AWS_ENDPOINT_URL
+    aws s3 sync "${BACKUP_DIR}/${BACKUP_NAME}" "s3://${S3_BUCKET_NAME}/${BACKUP_NAME}/"  --endpoint-url $AWS_ENDPOINT_URL --profile $AWS_PROFILE
 else
     log "REMOTE_UPLOAD env is empty skipping remote upload."
 fi
