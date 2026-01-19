@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<clickhouse>
+    <!-- query_log: History of executed queries -->
+    <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </query_log>
+
+    <!-- query_thread_log: Thread-level execution details -->
+    <query_thread_log>
+        <database>system</database>
+        <table>query_thread_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </query_thread_log>
+
+    <!-- part_log: Details about MergeTree data parts and merges -->
+    <part_log>
+        <database>system</database>
+        <table>part_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </part_log>
+
+    <!-- trace_log: Stack traces for performance profiling -->
+    <trace_log>
+        <database>system</database>
+        <table>trace_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </trace_log>
+
+    <!-- asynchronous_insert_log: Status of async inserts -->
+    <asynchronous_insert_log>
+        <database>system</database>
+        <table>asynchronous_insert_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </asynchronous_insert_log>
+
+    <!-- crash_log: Stack traces from server crashes -->
+    <crash_log>
+        <database>system</database>
+        <table>crash_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </crash_log>
+
+    <!-- text_log: Internal server text logs -->
+    <text_log>
+        <database>system</database>
+        <table>text_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </text_log>
+    
+    <!-- asynchronous_metric_log: Historical values for background metrics -->
+    <asynchronous_metric_log>
+        <database>system</database>
+        <table>asynchronous_metric_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </asynchronous_metric_log>
+
+    <!-- metric_log: Periodic snapshots of system metrics and profile events -->
+    <metric_log>
+        <database>system</database>
+        <table>metric_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+    </metric_log>
+</clickhouse>

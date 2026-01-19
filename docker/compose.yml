@@ -11,6 +11,7 @@ services:
       - clickhouse-data:/var/lib/clickhouse
       - clickhouse-logs:/var/log/clickhouse-server/
       - ./backups.xml:/etc/clickhouse-server/config.d/backups.xml:ro
+      - ./system-logs.xml:/etc/clickhouse-server/config.d/system-logs.xml:ro
       - ./clickhouse-backups:/var/lib/clickhouse/backups
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
@@ -27,7 +28,7 @@ services:
 volumes:
   clickhouse-data:
     name: clickhouse-data
-    external: true
+    # external: true
   clickhouse-logs:
     name: clickhouse-logs
-    external: true
+    # external: true
